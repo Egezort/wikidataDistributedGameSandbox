@@ -1,0 +1,110 @@
+<template id='tile-section-item-template'>
+<div class="item_preview">
+    <div v-if='loaded'>
+        <div class="item_label">
+            <a :href='"https://www.wikidata.org/wiki/"+section.q' class="external" target='_blank'>
+                <b>{{i.getLabel(preferred_language())}}</b>
+            </a>
+            <small>[{{section.q}}]</small>
+            <i v-if='taxon_name!=""'><small>{{taxon_name}}</small></i>
+        </div>
+        <div class="item_labels">
+            <div v-for="l in other_labels" class="item_lang_label">{{l}}</div>
+        </div>
+        <div class="item_options">
+            <div class="btn-group btn-group-sm">
+                <button v-for="sl in previews" :class="preview_button_class(sl.site)" type='button' @click.prevent="selectPreview(sl.site,sl.title)">
+                    <span v-if='sl.site=="auto"' tt='auto'></span>
+                    <span v-else>{{sl.site.replace(/wiki$/,'')}}</span>
+                </button>
+            </div>
+        </div>
+        <div class="item_description clearfix">
+            <div :key='preview'>
+                <div v-if='preview=="auto"'>
+                    <div v-if='i.hasClaims("P18")' class="item_thumb">
+                        <commons-thumbnail :filename='i.getFirstStringForProperty("P18")' width='240'></commons-thumbnail>
+                    </div>
+                    <div v-if='!skip_map && typeof coords.latitude!="undefined"' class="item_thumb">
+                        <map-preview :lat="coords.latitude*1" :lon="coords.longitude*1" zoom="12"></map-preview>
+                    </div>
+                    <autodesc :item='section.q' mode='long' :language='tt.language'></autodesc>
+                </div>
+                <wiki-preview v-else :wiki='preview' :title='preview_title'></wiki-preview>
+            </div>
+        </div>
+    </div>
+    <div v-else-if='error!=""' class="alert alert-danger" role="alert">{{error}}</div>
+    <div v-else><i>Loading {{section.q}}</i></div>
+</div>
+</template>
+
+
+<script>
+'use strict';
+
+Vue.component ( 'tile-section-item' , {
+    props : [ 'section' , 'skip_map' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return { i:{} , loaded:false , other_labels:[] , coords:{} , preview:'auto' , preview_title:'' , previews:[] , error:'' , taxon_name:'' } } ,
+    created : function () {
+        this.i = wd.getItem(this.section.q);
+        if ( typeof this.i != 'undefined' ) {
+            this.generate_other_labels();
+            this.check_coords();
+            this.genetate_previews() ;
+
+            let taxon_name = this.i.getFirstStringForProperty("P225");
+            if ( taxon_name != '' && taxon_name != this.i.getLabel(this.preferred_language()) ) {
+                this.taxon_name = taxon_name ;
+            }
+
+            this.loaded = true ;
+        } else {
+            this.error = "Item "+this.section.q+" could not be accessed. Maybe it doesn't exist?" ;
+        }
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) ; } ,
+    methods : {
+        preferred_language : function () {
+            return this.i.getLabelDefaultLanguage()
+        } ,
+        check_coords : function () {
+            let me = this ;
+            me.coords = {} ;
+            if ( !me.i.hasClaims("P625") ) return ;
+            let c = me.i.getClaimsForProperty("P625")[0] ;
+            if ( (((c.mainsnak||{}).datavalue||{}).value||{}).globe != 'http://www.wikidata.org/entity/Q2' ) return ;
+            me.coords = c.mainsnak.datavalue.value ;
+        } ,
+        generate_other_labels : function () {
+            let me = this ;
+            let ignore_label = me.i.getLabel(me.preferred_language()) ;
+            me.other_labels = me.i.getAliases(true).filter(function(label){return label!=ignore_label}).sort();
+        } ,
+        genetate_previews : function () {
+            let me = this ;
+            me.previews = [ {site:'auto',title:''} ]
+            $.each ( me.i.getWikiLinks() , function ( dummy , sl ) {
+                if ( sl.site == 'commonswiki' && /^[Cc]ategory:/.test(sl.title) ) return ;
+                me.previews.push(sl);
+            } ) ;
+        } ,
+        preview_button_class : function ( site ) {
+            let ret = ['btn'];//,'preview'] ;
+            if ( site == this.preview ) ret.push("btn-outline-primary");
+            else ret.push ( 'btn-outline-secondary' ) ;
+            if ( site == 'auto' ) {}
+            else if ( $.inArray(this.site2language(site),user_settings.languages) > -1 ) ret.push ( 'user_language_site' ) ;
+            return ret.join(' ') ;
+        } ,
+        selectPreview : function ( new_preview , new_preview_title ) {
+            this.preview_title = new_preview_title ;
+            this.preview = new_preview ;
+        }
+    },
+    template : '#tile-section-item-template'
+} ) ;
+
+</script>

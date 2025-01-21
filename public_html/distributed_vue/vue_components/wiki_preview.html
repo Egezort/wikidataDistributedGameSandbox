@@ -1,0 +1,114 @@
+<template id='wiki-preview-template'>
+<div class="item_preview">
+    <div v-if='loaded' class="clearfix">
+        <div class="col-md-12 section">
+            <div v-if='should_translate' style="float:right;white-space:nowrap;">
+                <a target='_blank' class="external" :href="'https://translate.google.com/translate?sl=auto&tl=en&u='+page_url()" tt="google_translate"></a>
+            </div>
+            <div class="sec_text_title">
+                <a target='_blank' class="external" :href="page_url()">{{title.replace(/_/g," ")}}</a>
+                <small>[{{wiki}}]</small>
+            </div>
+        </div>
+        <div class="col-md-12 section">
+            <div class="wikipage_text">
+                <div v-if='typeof thumb_url!="undefined"' class="item_thumb" style="float:right">
+                    <img :src='thumb_url' class="wiki_thumbnail" />
+                </div>
+                <div v-if='!skip_map && typeof coords.lat!="undefined"' class="item_thumb" style="float:right;">
+                    <map-preview :lat="coords.lat*1" :lon="coords.lon*1" zoom="12"></map-preview>
+                </div>
+                <div v-html='extract'></div>
+            </div>
+        </div>
+    </div>
+    <div v-else-if='error!=""'><b>{{error}}</b></div>
+    <div v-else><i>Loading {{wiki}}: {{title}}</i></div>
+</div>
+</template>
+
+
+<script>
+'use strict';
+
+Vue.component ( 'wiki-preview' , {
+    props : [ 'wiki','title','skip_map' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return { loaded:false , error:"" , data:{server:"",lang:tt.language,label:tt.language} , thumb_url:undefined , extract:'' , should_translate:false , thumbsize:240 , coords:{} } } ,
+    created : function () {
+        this.data = this.split_wiki(this.wiki) ;
+        if ( typeof this.data.server == 'undefined' || this.data.server == '' ) {
+            this.error = "Can't parse wiki: " + this.wiki ;
+            console.log(this.error);
+            return ;
+        }
+        if ( this.data.lang != tt.language ) this.should_translate = true ;
+        this.load_page_intro() ;
+        this.load_page_image() ;
+        this.load_page_coordinates() ;
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) } ,
+    methods : {
+        api : function () {
+            return "https://" + this.data.server + "/w/api.php?callback=?" ;
+        } ,
+        page_url : function () {
+            return 'https://'+this.data.server+'/wiki/'+this.title
+        } ,
+        load_page_image : function () {
+            let me = this ;
+            let params = {
+                action:'query',
+                titles:me.title,
+                prop:'pageimages',
+                piprop:'thumbnail',
+                pithumbsize:me.thumbsize,
+                pilimit:1,
+                format:'json'
+            } ;
+            $.getJSON( me.api() , params , function ( d ) {
+                $.each ( d.query.pages , function ( page_id , data ) {
+                    me.thumb_url = (data.thumbnail||{}).source ;
+                } ) ;
+            } ) ;
+        } ,
+        load_page_coordinates : function () {
+            let me = this ;
+            let params = {
+                action:'query',
+                titles:me.title,
+                prop:'coordinates',
+                coprimary:'primary',
+                format:'json'
+            } ;
+            $.getJSON( me.api() , params , function ( d ) {
+                $.each ( d.query.pages , function ( page_id , data ) {
+                    Vue.set(me,'coords',((data.coordinates||[])[0]||{}));
+                } ) ;
+            } ) ;
+        } ,
+        load_page_intro : function () {
+            let me = this ;
+            let params = {
+                action:'query',
+                prop:'extracts',
+                exchars:1000,
+                titles:me.title.replace(/ /g,'_') ,
+                format:'json'
+            } ;
+            $.getJSON( me.api() , params , function ( d ) {
+                $.each ( ((d.query||{}).pages||{}) , function ( k , v ) {
+                    var t = v.extract.split ( "\n" ) ;
+                    t[t.length-1] = t[t.length-1].replace ( /...\s*$/m , '' ) ;
+                    v.extract = $.trim ( t.join ( "\n" ) ) ;
+                    if ( v.extract != '' ) me.extract = me.scrub_html ( v.extract ) ;
+                } ) ;
+                me.loaded = true ;
+            } ) ;
+        }
+    },
+    template : '#wiki-preview-template'
+} ) ;
+
+</script>

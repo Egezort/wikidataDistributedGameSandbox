@@ -1,0 +1,58 @@
+<template id='main-page-template'>
+<div class='container'>
+	<tool-navbar>
+            <template slot='right'>
+                    <widar></widar>
+            </template>
+    </tool-navbar>
+    <p class='lead' tt='intro'></p>
+    <h3>
+        <div style='float:right' @click.prevent='toggle_sort'>
+            <span v-if='sort_order=="down"' style='cursor:pointer'>
+                &#9660;
+            </span>
+            <span v-else style='cursor:pointer'>
+                &#9650;
+            </span>
+        </div>
+        <span tt='available_games'></span>
+    </h3>
+    <ul id="game_list" class="list-group">
+        <li v-for='game_id in game_ids_sorted' class="list-group-item" :key='game_id'>
+            <game-entry :game_id='game_id'></game-entry>
+        </li>
+    </ul>
+    <hr/>
+    <a href='https://bitbucket.org/magnusmanske/wikidata-game/src/master/' target='_blank' class='external' tt='repo'></a>
+</div>
+</template>
+
+<script>
+'use strict';
+
+let MainPage = Vue.extend ( {
+        props : [] ,
+        data : function () { return { game_ids_sorted:[] , sort_order:'down' } } ,
+        created : function () {
+            this.sort_games();
+        } ,
+        updated : function () { tt.updateInterface(this.$el) ; } ,
+        mounted : function () { tt.updateInterface(this.$el) ; } ,
+        methods : {
+            sort_games:function () {
+                let me = this;
+                let game_ids_sorted = [] ;
+                $.each(games,function(id,game){ if((game.status||'')=='OK') game_ids_sorted.push(id*1)});
+                game_ids_sorted = game_ids_sorted.sort(function(a,b){ return a-b });
+                if ( me.sort_order == "down" ) game_ids_sorted = game_ids_sorted.reverse();
+                me.game_ids_sorted = game_ids_sorted ;
+            } ,
+            toggle_sort : function () {
+                let me = this ;
+                me.sort_order = me.sort_order == "down" ? "up" : "down" ;
+                me.sort_games();
+            }
+        },
+        template:'#main-page-template'
+    } ) ;
+</script>

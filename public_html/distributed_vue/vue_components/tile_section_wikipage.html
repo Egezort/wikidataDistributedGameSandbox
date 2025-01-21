@@ -1,0 +1,23 @@
+<template id='tile-section-wikipage-template'>
+<div class="item_preview">
+    <wiki-preview :wiki='section.wiki' :title='section.title' :skip_map='skip_map'></wiki-preview>
+</div>
+</template>
+
+
+<script>
+'use strict';
+
+Vue.component ( 'tile-section-wikipage' , {
+    props : [ 'section','skip_map' ] ,
+    data : function () { return {} } ,
+    created : function () {
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) } ,
+    methods : {
+    },
+    template : '#tile-section-wikipage-template'
+} ) ;
+
+</script>

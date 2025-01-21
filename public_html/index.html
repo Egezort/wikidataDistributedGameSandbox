@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html><head>
+<meta name="robots" content="nofollow" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Wikidata - The Game</title>
+
+<link href="https://tools.wmflabs.org/magnustools/resources/dist3/css/bootstrap.min.css" rel="stylesheet">
+
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/jquery/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/jquery/jquery.cookie.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/dist3/js/bootstrap.min.js"></script>
+<script src="https://tools.wmflabs.org/magnustools/resources/js/wikidata.js"></script>
+<script src="./main.js"></script>
+
+<style type="text/css">
+#head {
+	margin-bottom:5px;
+	border-bottom:1px solid #DDD;
+}
+#head_title {
+	cursor:pointer;
+	display:inline;
+}
+.item_label {
+	display:inline-block;
+	margin:1px;
+	margin-right:3px;
+	font-size:9pt;
+	font-family:Courier;
+	padding:2px;
+	background-color:#DBEBFF;
+}
+.item_desc {
+	display:inline-block;
+	margin:1px;
+	margin-right:3px;
+	font-size:8pt;
+	padding:2px;
+	background-color:#EEE;
+}
+.item_sitelink {
+	display:inline-block;
+	margin:1px;
+	margin-right:5px;
+	background-color:#E3E0FA;
+	padding:2px;
+	font-size:8pt;
+}
+.item_kv {
+	display:inline-block;
+	margin:1px;
+	margin-right:5px;
+	border:1px solid #DDD;
+}
+.item_prop {
+	display:inline-block;
+	padding:1px;
+	background-color:#89FC63;
+	padding-right:3px;
+}
+.item_prop_values {
+	display:inline-block;
+	padding:1px;
+	background-color:#BAFEA3;
+	padding-left:3px;
+}
+.item_container {
+/*	max-height:400px;overflow:auto;*/
+	border:1px solid #DDD ;
+	margin-top:5px;
+	padding:2px;
+}
+.site_preview {
+	font-size:9pt;
+}
+.decision {
+	background-color:#EEE; /* #FAFBDF */
+	padding:5px;
+	text-align:center;
+	margin-top:5px;
+	margin-bottom:5px;
+}
+#run_status {
+	position:absolute;
+	right:5px;
+	top:5px;
+	z-index:10000;
+	background-color:#EEE;
+}
+.highlight {
+	background-color:#FFFFC8;
+}
+.highlightM {
+	background-color:#C8C8FF;
+}
+.highlightF {
+	background-color:#FFC8FF;
+}
+
+div.main_page_box {
+	margin-top:3px;
+	margin-bottom:3px;
+	border-radius:15px;
+	-moz-border-radius:15px;
+	border:1px solid #DDD;
+}
+div.mpb_icon {
+	margin:2px;
+	min-width:120px;
+	max-width:120px;
+	min-height:120px;
+	max-height:120px;
+	overflow:hidden;
+	vertical-align:top;
+	text-align:center;
+	margin-right:5px;
+	display:inline-block;
+}
+div.mpb_text {
+	margin:2px;
+	display:inline-block;
+}
+div.mpb_text h3 {
+	margin-top:0px;
+	margin-bottom:0px;
+}
+div.wdgame_desc {
+	display:none;
+	padding:1em;
+}
+div.widar_note {
+	display:none;
+	border:3px solid #BBB;
+	background-color:#EEE;
+	margin-bottom:20px;
+	padding:2px;
+	padding-left:10px;
+	border-radius:15px;
+	-moz-border-radius:15px;
+}
+td.num {
+	text-align:right;
+	font-family:Courier;
+}
+#dialog {
+	display:none;
+}
+div.thumb_img {
+	display:inline-block;
+	text-align:center;
+	vertical-align:top;
+	width:120px;
+}
+div.thumb_desc {
+	display:inline-block;
+	vertical-align:top;
+	margin-left:5px;
+}
+div.thumb_container {
+	margin-top:5px;
+	padding-bottom:2px;
+	border-bottom:1px solid #DDD;
+}
+</style>
+
+</head>
+
+<body>
+
+
+
+<div id='run_status'></div>
+<div class='container'>
+	<div class="row" id='head'>
+	<h2 id='head_title'>Wikidata Game</h2>
+	<div style='display:inline-block;margin-left:10px' id='widar_state'></div>
+	</div>
+	<div id='v2' class="alert alert-info alert-dismissible" role="alert" style='display:none;font-size:14pt;'>
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		Check out <a href='/distributed/'>version 2</a> of the Wikidata Game!
+	</div>
+	<div class="row" id='main'></div>
+	<div class="row" id='foot'></div>
+</div>
+
+<div id='dialog' class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Modal title</h4>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+        <div style='display:inline-block' id='other_dialog_buttons'></div>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+</body>
+</html>

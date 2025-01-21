@@ -1,0 +1,19 @@
+# Hourly
+toolforge-jobs run --image tf-php74 --schedule '42 * * * *' --mem 100Mi --command '/data/project/wikidata-game/update_distributed_game.sh' update-distributed-game
+
+# Daily
+toolforge-jobs run --image tf-php74 --schedule '17 2 * * *' --mem 200Mi --command '/data/project/wikidata-game//scripts/games/maintenance.php' game-maintenance
+
+# WDQ!!!
+# 12 15 * * * jsub -quiet -once -mem 4g /data/project/wikidata-game/tools/update_database.sh
+# 17 * * * * cd /data/project/wikidata-game/tools/ ; jsub -mem 2g -cwd -quiet -once ./update_coord_no_admin_unit.php
+# 20 0,2,4,6 * * * cd /data/project/wikidata-game/tools/ ; jsub -mem 2g -cwd -quiet -once ./add_image_candidates.php
+# 20 8,10,12,14,16,18,20,22,2,4,6 * * * cd /data/project/wikidata-game/tools/ ; jsub -mem 2g -cwd -quiet -once ./update_occupation.php
+# 57 8,10,12,14,16,18,20,22,2,4,6 * * * cd /data/project/wikidata-game/tools/ ; jsub -mem 8g -cwd -quiet -once ./update_author.php
+
+# Bad results
+# 57 9,21 * * * cd /data/project/wikidata-game/tools/ ; jsub -mem 8g -cwd -quiet -once ./bold_aliases.php
+
+# Source not updated since 2018
+# 57 6 * * * cd /data/project/wikidata-game/tools/ ; jsub -mem 8g -cwd -quiet -once ./update_dupes_from_sparql.php
+

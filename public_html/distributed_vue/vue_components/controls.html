@@ -1,0 +1,99 @@
+<template id='controls-template'>
+<div class="row">
+    <div v-if='widar.is_logged_in' class="col-md-12 control">
+        <div style="text-align:center">
+            <div v-for='con in tile.controls'>
+                <div v-if='con.type=="buttons"' class="btn-group btn-group-lg">
+                    <button v-for="(button,button_num) in con.entries" :class='button_class(button)' type='button' :decision='button.decision' :id='"control_button_"+(button_num+1)' :title='"Or press "+(button_num+1)' @click.prevent='click_button(button)'>
+                        {{button.label}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+
+<script>
+'use strict';
+
+Vue.component ( 'controls' , {
+    props : [ 'game','tile' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return {} } ,
+    created : function () {
+        //console.log(JSON.parse(JSON.stringify(this.tile)));
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) } ,
+    methods : {
+        button_class : function ( button ) {
+            let ret = [ "btn" , "btn-lg" ] ;
+            if ( button.type == 'green' ) ret.push('btn-outline-success') ;
+            if ( button.type == 'yellow' ) ret.push('btn-outline-warning') ;
+            if ( button.type == 'blue' ) ret.push('btn-outline-primary') ;
+            if ( button.type == 'white' ) ret.push('btn-outline-secondary') ;
+            if ( button.type == 'red' ) ret.push('btn-outline-danger') ;
+            return ret.join(' ');
+        } ,
+        click_button : function ( button ) {
+            let me = this ;
+            if ( button.decision == 'skip' ) {
+                me.load_next_tile(button);
+                return ;
+            }
+
+            // API actions
+            let actions = button.api_action||[] ;
+            if ( typeof actions.length == 'undefined' ) actions = [ actions ] ; // Single action => array
+            let api_actions_j = JSON.stringify ( actions ) ; // For later
+
+            let promises = [] ;
+
+            // Log action in game central
+            promises.push ( new Promise(function(resolve, reject) {
+                $.get ( api_url , {
+                    action:'log_action',
+                    user:widar.getUserName(),
+                    game:me.game.id,
+                    tile:me.tile.id,
+                    decision:button.decision,
+                    api_action:api_actions_j
+                } , function ( d ) {
+                } , 'json' ) . always ( resolve ) ;
+            } ) ) ;
+
+            // Log action in the individual, distributed game
+            promises.push ( new Promise(function(resolve, reject) {
+                $.getJSON ( me.get_json_api(me.game.api) , {
+                    action:'log_action',
+                    user:widar.getUserName(),
+                    tile:me.tile.id,
+                    decision:button.decision
+                } , function ( d ) {
+                } ) . always ( resolve ) ;
+            } ) ) ;
+
+            $.each ( actions , function ( num , action ) {
+                promises.push ( new Promise(function(resolve, reject) {
+                    action.summary = "The Distributed Game (" + me.game.id + "): " + me.get_game_label() ;
+                    action.tool_hashtag = 'distributed-game'; // widar.tool_hashtag ;
+                    me.widar_generic(action,resolve,reject);
+                } ) ) ;
+            } ) ;
+
+            this.$emit('processing') ;
+            Promise.all(promises).then ( () => {
+                me.load_next_tile(button);
+            } ) ;
+        } ,
+
+        load_next_tile : function ( button ) {
+            this.$emit('load-next-tile',button) ;
+        }
+    } ,
+    template : '#controls-template'
+} ) ;
+
+</script>

@@ -1,0 +1,74 @@
+<template id='game-tile-template'>
+<div class="gametile row" :style="processing?'opacity:0.5':''">
+    <div v-for='(section,section_num) in (tile.sections||[])' class="col-md-12 section" :key='tile.id+"_"+section_num'>
+        <tile-section-item v-if='section.type=="item"' :section='section' :skip_map='has_large_map_section'></tile-section-item>
+        <tile-section-wikipage v-else-if='section.type=="wikipage"' :section='section' :skip_map='has_large_map_section'></tile-section-wikipage>
+        <tile-section-files v-else-if='section.type=="files"' :section='section' :game='game' @section-working='section_working($event)' @section-decision='section_decision($event)'></tile-section-files>
+        <div v-else-if='section.type=="html"'>
+            <div v-if='typeof section.title!="undefined"' class="sec_text_title">
+                <span v-if='typeof section.url!="undefined"'>
+                    <a :href='section.url' class='external' target='_blank'>{{section.title}}</a>
+                </span>
+                <span v-else>{{section.title}}</span>
+            </div>
+            <div v-if='typeof section.text!="undefined"' v-html='scrub_html(section.text)'></div>
+        </div>
+        <div v-else-if='section.type=="text"'>
+            <div v-if='typeof section.title!="undefined"' class="sec_text_title">
+                <span v-if='typeof section.url!="undefined"'>
+                    <a :href='section.url' class='external' target='_blank'>{{section.title}}</a>
+                </span>
+                <span v-else>{{section.title}}</span>
+            </div>
+            <div v-if='typeof section.text!="undefined"'>{{html2text(section.text)}}</div>
+        </div>
+        <div v-else-if='section.type=="map"' style='width:100%;height:20rem;'>
+            <map-section :lat='section.lat' :lon='section.lon' zoom='6'></map-section>
+        </div>
+        <div v-else>
+            UNKNOWN SECTION TYPE: {{section}}
+        </div>
+    </div>
+    <div v-if='active' class="col-md-12 control_box" style="display: block;">
+        <controls :game='game' :tile='tile' @processing='processing=true' @load-next-tile='load_next_tile(event)'></controls>
+    </div>
+</div>
+</template>
+
+<script>
+'use strict';
+
+Vue.component ( 'game-tile' , {
+    props : [ 'game' , 'tile' , 'active' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return { processing:false } } ,
+    created : function () {
+        //if(this.active) console.log(JSON.parse(JSON.stringify(this.tile)));
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) } ,
+    methods : {
+        has_large_map_section : function () {
+            let ret = false ;
+            $.each ( (this.tile.sections||[]) , function ( section_number , section ) {
+                if ( section.type == 'map' ) ret = true ;
+            } ) ;
+            console.log(ret);
+            return ret ;
+        } ,
+        load_next_tile : function ( button ) {
+            this.$emit('load-next-tile',button) ;
+        } ,
+        section_decision : function ( decision ) {
+            if ( typeof decision.decision == 'undefined' ) return ;
+            $("div.control button[decision="+decision.decision+"]").click() ;
+        } ,
+        section_working : function ( e ) {
+            if ( e.status ) $(this.$el).css({opacity:0.5}) ;
+            else $(this.$el).css({opacity:1}) ;
+        }
+    },
+    template : '#game-tile-template'
+} ) ;
+
+</script>

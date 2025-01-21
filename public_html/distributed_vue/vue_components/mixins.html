@@ -1,0 +1,99 @@
+<script>
+'use strict';
+
+var gameMixin = {
+	data: function () {
+    	return {
+    		game:{}
+    	}
+    },
+    methods:{
+    	is_mobile : function () {
+    		return window.screen.width <= 767 ; // see bottom of main.css
+    	} ,
+    	best_language ( list ) {
+    		let ret = '' ;
+    		$.each ( user_settings.languages , function ( dummy , lang ) {
+    			if ( ret == '' && $.inArray(lang,list) != -1 ) ret = lang ;
+    		} ) ;
+    		if ( ret == '' && $.inArray(tt.language,list) != -1 ) ret = lang ;
+    		if ( ret == '' && $.inArray('en',list) != -1 ) ret = lang ;
+    		if ( ret == '' && list.length > 0 ) ret = list[0] ;
+    		return ret ;
+    	} ,
+    	site2language : function ( site ) {
+    		let data = this.split_wiki ( site ) ;
+    		return data.lang ;
+    	} ,
+        split_wiki : function ( wiki ) {
+            let match = null ;
+            if ( wiki == "commonswiki" ) return "commons.wikimedia.org" ;
+            if ( (match=(new RegExp("^(.+?)wiki$")).exec(wiki)) != null ) { return {lang:match[1], label:match[1], server:match[1]+".wikipedia.org"} } ;
+            if ( (match=(new RegExp("^(.+?)(wik.+)$")).exec(wiki)) != null ) { return {lang:match[1], label:wiki, server:match[1]+"."+match[2]+".org"} } ;
+            console.log ( "Can't parse wiki: "+wiki);
+            return {lang:"",label:wiki,server:""} ;
+        } ,
+    	scrub_html : function ( html ) {
+    		// Removes all <script> tags from the html
+    		var div = document.createElement('div');
+			div.innerHTML = html;
+			var scripts = div.getElementsByTagName('script');
+			var i = scripts.length;
+			while (i--) {
+				scripts[i].parentNode.removeChild(scripts[i]);
+			}
+			return div.innerHTML;
+    	} ,
+    	html2text : function ( html ) {
+			var tmp = document.createElement("DIV");
+			tmp.innerHTML = html;
+			var ret = tmp.textContent || tmp.innerText || "";
+			ret = ret.replace ( /\n/g , '<br/>' ) ;
+			return ret ;
+    	} ,
+    	get_json_api : function ( api ) {
+    		return api+"?callback=?"
+    	} ,
+		get_game_label : function () {
+			return this.get_localized_text('label','Game #'+this.game_id);
+		},
+		get_game_description : function () {
+			return this.get_localized_text('description','');
+		} ,
+		get_game_instructions : function () {
+			return this.get_localized_text('instructions','');
+		} ,
+		get_localized_text : function ( key , default_value ) {
+			let me = this ;
+			if ( typeof me.game[key] == 'undefined' ) {
+				return default_value;
+			}
+			if ( typeof me.game[key][tt.language] != 'undefined' ) {
+				return me.game[key][tt.language] ;
+			}
+			if ( typeof me.game[key]['en'] != 'undefined' ) {
+				return me.game[key]['en'] ;
+			}
+			return default_value;
+		} ,
+		widar_generic : function (action,resolve,reject) {
+            let params = {
+                action:'generic',
+                json:JSON.stringify(action) ,
+                tool_hashtag:widar.tool_hashtag ,
+                botmode:1
+            } ;
+            widar.run ( params , function (d) {
+                if ( typeof d == 'undefined' ) {
+                    console.log ( "Something went wrong. If this problem persists, please file a bug report!" ) ;
+                    return reject() ;
+                } else if ( typeof d.error != 'undefined' && d.error != 'OK' ) {
+                    alert ( d.error ) ;
+                }
+                resolve() ;
+            } ) ;
+		}
+	}
+}
+
+</script>

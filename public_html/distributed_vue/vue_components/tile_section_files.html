@@ -1,0 +1,102 @@
+<template id='tile-section-files-template'>
+<div class="file_list">
+    <div v-for='(file,file_id) in (section.files||[])' :key="file" class="row file_row">
+        <div class="col-md-3 col-sm-5 file_thumbnail_container">
+            <commons-thumbnail :filename="file" width="240"></commons-thumbnail>
+        </div>
+        <div class="col-md-9 col-sm-7 file_meta_section">
+            <div class="file_title">{{file.replace(/_/g," ")}}</div>
+            <div class="file_description" v-html='file_description[file]'></div>
+            <div class="file_actions">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-success" @click.prevent='file_as_prop(file_id,"P18")'>{{label("P18")}}</button>
+                </div>
+                <div class="btn-group" role="group">
+                    <div v-for="groupname in ['photo','map','diagram']" class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{groupname}}
+                        </button>
+                        <div class="dropdown-menu">
+                            <a v-for='prop in media_props[groupname]' href="#" class="dropdown-item" @click.prevent='file_as_prop(file_id,prop.p)'>{{label(prop.p)}} <small>[{{prop.p}}]</small></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group" role="group">
+                    <div v-for="groupname in ['audio','video','other']" class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{groupname}}
+                        </button>
+                        <div class="dropdown-menu">
+                            <a v-for='prop in media_props[groupname]' href="#" class="dropdown-item" @click.prevent='file_as_prop(file_id,prop.p)'>{{label(prop.p)}} <small>[{{prop.p}}]</small></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+
+<script>
+'use strict';
+
+Vue.component ( 'tile-section-files' , {
+    props : [ 'section' , 'game' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return { i:{} , loaded:false , other_labels:[] , file_description:{} } } ,
+    created : function () {
+        let me = this ;
+        $.each ( (me.section.files||[]) , function ( dummy , file ) {
+            me.load_file_description(file);
+        } ) ;
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) } ,
+    methods : {
+        load_file_description : function ( file ) {
+            let me = this ;
+            $.getJSON ( '//commons.wikimedia.org/w/api.php?callback=?' , {
+                action:'parse',
+                page:'File:'+file,
+                format:'json'
+            } , function ( d ) {
+                let desc = "<i>Parsing failed</i>" ;
+                if ( typeof d.parse != 'undefined' ) {
+                    var nh = $('<div>').append ( $.parseHTML ( d.parse.text['*'] ) ) ;
+                    nh.find('#cleanup').remove() ;
+                    desc = $(nh.find('td.description')) ;
+                    if ( desc.length == 0 ) desc = $(nh.find('div.description')) ;
+                    if ( desc.length == 0 ) desc = '<i>No description or no {{Information}} template</i>' ;
+                    else desc = desc.html() ;
+                }
+                Vue.set(me.file_description,file,me.scrub_html(desc));
+            } ) ;
+        } ,
+        label : function ( prop ) {
+            return wd.getItem(prop).getLabel(tt.language) ;
+        } ,
+        file_as_prop : function ( file_id , property ) {
+            let me = this ;
+            let file = me.section.files[file_id] ;
+
+            var action = {
+                action:'wbcreateclaim',
+                entity:me.section.item,
+                snaktype:'value',
+                property:property,
+                value:JSON.stringify(file.replace(/_/g,' ')),
+                summary:"The Distributed Game (" + me.game.id + "): " + me.get_game_label() + " #" + widar.tool_hashtag,
+            } ;
+            me.$emit('section-working',{status:true});
+            me.widar_generic(action,function(){
+                me.$emit('section-working',{status:false});
+                me.section.files.splice(file_id,1);
+                if ( me.section.files.length == 0 && typeof me.section.section_empty_decision!='undefined' ) me.$emit('section-decision',{decision:me.section.section_empty_decision}) ;
+            });
+        } ,
+    },
+    template : '#tile-section-files-template'
+} ) ;
+
+</script>

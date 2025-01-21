@@ -1,0 +1,162 @@
+<template id='game-template'>
+<div class='container'>
+	<tool-navbar>
+        <template slot='right'>
+    		<div v-if='loading_tiles' class="loader"></div>
+            <widar></widar>
+        </template>
+    </tool-navbar>
+    <p v-if='game_does_not_exist' tt='game_does_not_exist'></p>
+    <div v-else>
+    	<div class="game_title">{{get_game_label()}}</div>
+    	<div class="game_description" v-html='scrub_html(get_game_description())'></div>
+    	<div class="game_instructions" v-html='scrub_html(get_game_instructions())'></div>
+
+        <div v-for='(o,onum) in (game.options||[])' style='display:inline-block;margin-right:2rem;margin-bottom:1rem;'>
+            <span>{{o.name}}</span>
+            :
+            <div v-if='Object.values(o.values).length>20 || is_mobile()' style='display:inline-block;'>
+                <select class="form-control" :name="'game_options_'+o.key" v-model='options[o.key]' @change='options_changed'>
+                    <option v-for='(text,value) in o.values' :value='value'>
+                        {{text}}
+                    </option>
+                </select>
+            </div>
+            <div v-else class="btn-group btn-group-toggle">
+                <label v-for='(text,value) in o.values' :class="'btn btn-outline-'+(value==options[o.key]?'primary':'secondary')">
+                    <input type='radio' :name="'game_options_'+o.key" :name="'game_options_'+o.key" :value='value' v-model='options[o.key]' @change='options_changed' />
+                    {{text}}
+                </label>
+            </div>
+        </div>
+
+        <div v-for='error in errors' class="alert alert-danger" role="alert">{{error}}</div>
+        <div v-for='warning in warnings' class="alert alert-warning" role="alert">{{warning}}</div>
+
+    	<div id="tiles" class="row">
+		    <game-tile v-for='(tile,tilenum) in tiles' :tile='tile' :game='game' :active='tilenum==0' :key='tile.id' @load-next-tile='load_next_tile(event)'></game-tile>
+		</div>
+    </div>
+</div>
+</template>
+
+<script>
+'use strict';
+
+let Game = Vue.extend ( {
+    props : [ 'game_id' , 'initial_options' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return { game_does_not_exist:false , tiles:[] , tile_id_cache:[] , max_cache_size:10 , load_new_tiles_below:5 , loading_tiles:false , options:{} , errors:[] , warnings:[] } } ,
+    created : function () {
+        let me = this ;
+    	if ( typeof games[me.game_id] == 'undefined' ) {
+    		me.game_does_not_exist = true ;
+    		return;
+    	}
+    	me.game = games[me.game_id] ;
+
+        // Initialize options
+        $.each ( (me.game.options||[]) , function ( k , v ) {
+            $.each ( v.values , function ( k2 , v2 ) {
+                if ( typeof me.options[v.key] != 'undefined' ) return ;
+                Vue.set(me.options,v.key,k2) ;
+            } ) ;
+        } ) ;
+        if ( typeof me.initial_options != 'undefined' ) me.options = JSON.parse(me.initial_options) ;
+        me.update_url();
+        //console.log(JSON.parse(JSON.stringify(me.game)));
+
+    	me.loading_tiles = false ;
+    	me.update_cache();
+    } ,
+    updated : function () { tt.updateInterface(this.$el) ; } ,
+    mounted : function () { tt.updateInterface(this.$el) ; } ,
+    methods : {
+    	update_cache : function () {
+    		let me = this ;
+    		if ( me.loading_tiles ) {
+                setTimeout ( me.update_cache , 500 ) ; // Just in case...
+                return ;
+            }
+    		if ( me.tiles.length >= me.load_new_tiles_below ) return;
+    		if ( me.tiles.length > me.max_cache_size ) return ;
+            me.errors = [] ;
+            me.warnings = [] ;
+    		me.loading_tiles = true ;
+    		let tiles_to_load = me.max_cache_size - me.tiles.length ;
+    		let params = {
+    			action:'tiles',
+    			num:tiles_to_load,
+    			lang:tt.language,
+    			in_cache:me.tile_id_cache.join(','),
+    			random_number:Math.random(), // Force non-cached
+    		} ;
+            $.each ( me.options , function(k,v) { params[k] = v ; } ) ;
+            //console.log(JSON.parse(JSON.stringify(params)));
+    		$.getJSON ( me.get_json_api(me.game.api) , params , function (d) {
+                if ( Array.isArray(d) ) d = { tiles:d } ; // Old format
+                //console.log(JSON.parse(JSON.stringify(d)));
+
+    			let tiles = (d.tiles||[]) ;
+                if ( tiles.length == 0 ) {
+                    me.errors.push("This game has no more tiles left. Maybe try another one for a while?") ;
+                    me.loading_tiles = false;
+                    return ;
+                }
+
+                if ( typeof d.left != 'undefined' ) {
+                    let left = d.left * 1 ;
+                    if ( left < 50 ) me.warnings.push("This game is low on tiles. Maybe try another one for a while?") ;
+                }
+    			if ( tiles.length < tiles_to_load ) {
+                    me.warnings.push("This game API returned less than expected tiles") ;
+    			}
+
+    			let tiles_to_add = [] ;
+    			let items_to_load = [] ;
+    			$.each ( tiles , function ( dummy , tile ) {
+    				$.each ( (tile.sections||[]) , function ( dummy , section ) {
+    					if ( typeof section.q == 'undefined' ) return ;
+    					items_to_load.push(section.q);
+    				} ) ;
+    				me.tile_id_cache.push(tile.id);
+    				tiles_to_add.push(tile);
+    			} ) ;
+    			// Pre-load relevant items
+    			wd.getItemBatch(items_to_load,function(){
+    				// Limit tile id cache size, deleting oldest first
+    				while ( me.tile_id_cache.length > 50 ) me.tile_id_cache.shift();
+    				// Append tiles
+    				me.tiles.push.apply(me.tiles, tiles_to_add);
+    			});
+    		} ) .fail ( function () {
+    			me.errors.push ( "This game failed to answer. Maybe try another one for a while?" ) ;
+    		} ) . always ( function () {
+    			me.loading_tiles = false;
+    		} ) ;
+    	} ,
+        load_next_tile : function ( button ) {
+            let me = this ;
+            if ( me.is_mobile() ) window.scrollTo(0, $('#tiles').offset().top);
+            $('div.gametile:first').animate({height:'toggle',opacity:0.25},500,'swing',function(){
+                me.tiles.shift() ;
+                me.update_cache() ;
+            })
+        } ,
+        options_changed : function () {
+            let me = this ;
+            me.update_url();
+            me.tile_id_cache = [] ;
+            me.tiles = [] ;
+            me.update_cache() ;
+        } ,
+        update_url : function () {
+            let me = this ;
+            let url = '/game/' + me.game.id ;
+            if ( Object.values(me.options).length>0 ) url += "/" + JSON.stringify(me.options) ;
+            me.$router.replace ( url );
+        }
+    },
+    template:'#game-template'
+} ) ;
+</script>

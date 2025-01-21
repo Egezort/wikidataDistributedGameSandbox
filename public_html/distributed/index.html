@@ -1,0 +1,342 @@
+<!DOCTYPE HTML>
+<html><head>
+<meta name="robots" content="nofollow" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Wikidata - The Distributed Game</title>
+
+<link rel="stylesheet" href="https://tools.wmflabs.org/magnustools/resources/dist3/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://tools.wmflabs.org/magnustools/resources/leaflet/leaflet.css" />
+
+<script type="text/javascript" src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/jquery/jquery.cookie.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/dist3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/leaflet/leaflet.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/flot/jquery.flot.min.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/flot/jquery.flot.time.min.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/wikidata.js"></script>
+<script type="text/javascript" src="https://tools.wmflabs.org/magnustools/resources/js/widar.js"></script>
+<script type="text/javascript" src="./main.js"></script>
+
+
+<style type="text/css">
+.wraptocenter {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+.wraptocenter * {
+    vertical-align: middle;
+}
+/*\*//*/
+.wraptocenter {
+    display: block;
+}
+.wraptocenter span {
+    display: inline-block;
+    height: 100%;
+    width: 1px;
+}
+/**/
+</style>
+<!--[if lt IE 8]><style>
+.wraptocenter span {
+    display: inline-block;
+    height: 100%;
+}
+</style><![endif]-->
+
+
+
+<style type="text/css">
+body {
+	color:#111111;
+	background-color:#fffff8;
+	font-family:ETBembo, Palatino, Georgia, "Times New Roman", Serif;
+}
+
+div.section {
+	border-top:1px dotted #111111;
+	margin-top:5px;
+	margin-bottom:5px;
+}
+div.section:first-child {
+	border-top:none;
+	margin-top:0px;
+	margin-bottom:5px;
+}
+
+
+#main > div {
+	margin-right:20px;
+	margin-left:20px;
+}
+div.gametile {
+	border:3px solid #777772;
+	border-radius:10px;
+	box-shadow: 10px 10px 5px #888;
+	margin-bottom:20px;
+	padding:5px;
+	min-height:20px;
+	background-color:#eeeee7;
+	color:#CCC;
+}
+div.gametile:first-child {
+	border:3px solid #2966B8;
+	background-color:#FFF;
+	color:#111111;
+	background-color:#fffff8;
+}
+
+div.gametile a { color:#CCC; }
+div.gametile:first-child a { color:#2966B8; }
+
+div.gametile img { opacity:0.25; }
+div.gametile:first-child img { opacity:1; }
+
+
+
+div.item_options {
+	background-color:#eeeee7;
+	margin-top:2px;
+	margin-bottom:2px;
+	font-family: "Trebuchet MS", "Gill Sans", "Gill Sans MT", sans-serif;
+}
+
+div.game_wrapper {
+}
+
+div.sec_text_title {
+	font-size:16pt;
+	font-weight:bold;
+}
+div.sec_text {
+	font-size:12pt;
+}
+
+div.wikipage_text {
+	font-size:12pt;
+}
+
+div.item_label {
+	font-size:16pt;
+}
+div.item_labels {
+	font-size:8pt;
+	display:table;
+}
+div.item_lang_label {
+	display:inline-block;
+	padding-right:10px;
+}
+div.item_description {
+	font-size:12pt;
+}
+div.game_title {
+	font-weight:bold;
+}
+div.game_description {
+	font-size:13pt;
+	margin-bottom:20px;
+}
+div.game_instructions {
+	font-size:11pt;
+	margin-bottom:20px;
+	border-left:15px solid #EEEEE7;
+}
+div.item_thumb {
+	float:right;
+	margin-left:10px;
+	margin-bottom:5px;
+}
+div.control_box {
+	padding:5px;
+	margin-top:10px;
+	display:none;
+}
+div.control_box_vertical {
+	position:fixed;
+	bottom:0px;
+	right:0px;
+	left:0px;
+	z-index:1;
+	background-color:#DDD;
+	border-top:20px solid white;
+}
+
+div.control {
+	margin-top:10px;
+}
+div.control:first-child {
+	margin-top:none;
+}
+
+.control button {
+	text-wrap: balance;
+
+    @media (max-width: 767px) {
+        width: 100%;
+    }
+}
+
+div.source_wiki_link {
+/*	border-top: 1px solid #111111;*/
+	font-size: 9pt;
+	margin-top: 0px;
+	text-align:right;
+}
+
+span.qnum {
+	font-size:9pt;
+	font-family: "Trebuchet MS", "Gill Sans", "Gill Sans MT", sans-serif;
+}
+
+#spinning {
+	margin-top:12px;
+}
+
+div.top10 {
+	display:inline-block;
+	vertical-align:top;
+	margin-right:20px;
+}
+
+#hourly_plot {
+	width:100%;
+	height:250px;
+}
+
+a.item_language_link {
+	color:#fffff8 !important;
+}
+
+td.num {
+	font-family: "Trebuchet MS", "Gill Sans", "Gill Sans MT", sans-serif;
+	text-align:right;
+}
+
+span.selected_lang_link {
+	border:1px solid #111111;
+}
+span.selected_lang_link a {
+	color:blue;
+}
+
+
+div.file_row {
+	margin-top:5px;
+}
+
+div.file_thumbnail_container {
+	width:245px;
+	height:245px;
+	text-align:center;
+}
+
+div.file_actions {
+	border-top:1px solid #ccc;
+	margin-top:4px;
+	padding-top:2px;
+}
+
+div.file_actions ul.dropdown-menu {
+	font-size:120%;
+}
+
+div.file_title {
+	font-weight:bold;
+	font-size:13pt;
+	border-bottom:1px solid #ccc;
+	margin-bottom:4px;
+}
+
+div.file_meta_section {
+	min-height:125px;
+}
+
+div.percent {
+	display:inline-block;
+	width:50px;
+	text-align:right;
+}
+
+#user_icon { display:none; }
+#user_icon a { padding:2px; }
+#stats_icon a { padding:2px; }
+
+</style>
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">The Distributed Game</a>
+		<ul class="nav navbar-nav">
+			<li id='spinning'><img src='https://upload.wikimedia.org/wikipedia/commons/7/7f/Throbber_allbackgrounds_monochrome.gif' /></li>
+		</ul>
+    </div>
+
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		<ul class="nav navbar-nav navbar-right">
+			<li id='widar'></li>
+			<li id='user_icon'><a href='#'><img border=0 src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Gnome-stock_person.svg/45px-Gnome-stock_person.svg.png'/></a></li>
+			<li id='stats_icon'><a href='#'><img border=0 src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Gnome-power-statistics.svg/45px-Gnome-power-statistics.svg.png'/></a></li>
+		</ul>
+<!--
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+      <form class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+-->
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+<div class='container' id='main'>
+</div>
+
+</body>
+</html>

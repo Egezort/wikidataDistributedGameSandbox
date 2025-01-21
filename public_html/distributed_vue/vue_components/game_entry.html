@@ -1,0 +1,35 @@
+<template id='game-entry-template'>
+<div class="row game_entry" style="cursor:pointer" @click.prevent='start_game'>
+	<div class="col-xs-4 col-md-2 game_list_icon_column">
+		<div v-if='typeof game.icon!="undefined"' class="wraptocenter" style="text-align:center">
+			<img class="img-responsive" :src='game.icon' style="max-width:100%" />
+		</div>
+	</div>
+	<div class="col-xs-8 col-md-10 game_list_description_column">
+		<h3>{{get_game_label()}}</h3>
+		<div v-html='scrub_html(get_game_description())'></div>
+	</div>
+</div>
+</template>
+
+<script>
+'use strict';
+
+Vue.component ( 'game-entry' , {
+    props : [ 'game_id' ] ,
+    mixins: [ gameMixin ] ,
+    data : function () { return { game:{} } } ,
+    created : function () {
+    	this.game = games[this.game_id];
+    } ,
+    updated : function () { tt.updateInterface(this.$el) } ,
+    mounted : function () { tt.updateInterface(this.$el) } ,
+    methods : {
+    	start_game : function () {
+    		this.$router.push ( '/game/'+this.game_id );
+    	},
+    },
+    template : '#game-entry-template'
+} ) ;
+
+</script>

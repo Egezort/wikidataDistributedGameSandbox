@@ -1,0 +1,329 @@
+.loader {
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.wraptocenter {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+.wraptocenter * {
+    vertical-align: middle;
+}
+/*\*//*/
+.wraptocenter {
+    display: block;
+}
+.wraptocenter span {
+    display: inline-block;
+    height: 100%;
+    width: 1px;
+}
+/**/
+
+body {
+	color:#111111;
+	background-color:#fffff8;
+	font-family:ETBembo, Palatino, Georgia, "Times New Roman", Serif;
+}
+
+li.list-group-item {
+	color:#111111;
+	background-color:#fffff8;
+	font-family:ETBembo, Palatino, Georgia, "Times New Roman", Serif;
+}
+
+div.section {
+	border-top:1px dotted #111111;
+	margin-top:5px;
+	margin-bottom:5px;
+}
+div.section:first-child {
+	border-top:none;
+	margin-top:0px;
+	margin-bottom:5px;
+}
+
+
+#main > div {
+	margin-right:20px;
+	margin-left:20px;
+}
+div.gametile {
+	border:3px solid #777772;
+	border-radius:10px;
+	box-shadow: 10px 10px 5px #888;
+	margin-bottom:20px;
+	padding:5px;
+	min-height:20px;
+	background-color:#eeeee7;
+	color:#CCC;
+	width:100%;
+}
+div.gametile:first-child {
+	border:3px solid #2966B8;
+	background-color:#FFF;
+	color:#111111;
+	background-color:#fffff8;
+}
+
+div.gametile a { color:#CCC; }
+div.gametile:first-child a { color:#2966B8; }
+
+div.gametile img { opacity:0.25; }
+div.gametile:first-child img { opacity:1; }
+
+
+
+div.item_options {
+	background-color:#eeeee7;
+	margin-top:2px;
+	margin-bottom:2px;
+	font-family: "Trebuchet MS", "Gill Sans", "Gill Sans MT", sans-serif;
+}
+
+div.game_wrapper {
+}
+
+div.sec_text_title {
+	font-size:16pt;
+	font-weight:bold;
+}
+div.sec_text {
+	font-size:12pt;
+}
+
+div.wikipage_text {
+	font-size:12pt;
+}
+
+div.item_label {
+	font-size:16pt;
+}
+div.item_labels {
+	font-size:8pt;
+	display:table;
+}
+div.item_lang_label {
+	display:inline-block;
+	padding-right:10px;
+}
+div.item_description {
+	font-size:12pt;
+}
+div.game_title {
+	font-weight:bold;
+}
+div.game_description {
+	font-size:13pt;
+	margin-bottom:20px;
+}
+div.game_instructions {
+	font-size:11pt;
+	margin-bottom:20px;
+	border-left:15px solid #EEEEE7;
+	paddding-left:0.5rem;
+}
+div.item_thumb {
+	float:right;
+	margin-left:10px;
+	margin-bottom:5px;
+}
+div.control_box {
+	padding:5px;
+	margin-top:10px;
+	display:none;
+}
+div.control_box_vertical {
+	position:fixed;
+	bottom:0px;
+	right:0px;
+	left:0px;
+	z-index:1;
+	background-color:#DDD;
+	border-top:20px solid white;
+}
+
+div.control {
+	margin-top:10px;
+}
+div.control:first-child {
+	margin-top:none;
+}
+
+div.source_wiki_link {
+/*	border-top: 1px solid #111111;*/
+	font-size: 9pt;
+	margin-top: 0px;
+	text-align:right;
+}
+
+span.qnum {
+	font-size:9pt;
+	font-family: "Trebuchet MS", "Gill Sans", "Gill Sans MT", sans-serif;
+}
+
+#spinning {
+	margin-top:12px;
+}
+
+div.top10 {
+	display:inline-block;
+	vertical-align:top;
+	margin-right:20px;
+}
+
+#hourly_plot {
+	width:100%;
+	height:250px;
+}
+
+a.item_language_link {
+	color:#fffff8 !important;
+}
+
+td.num {
+	font-family: "Trebuchet MS", "Gill Sans", "Gill Sans MT", sans-serif;
+	text-align:right;
+}
+
+button.user_language_site {
+	font-weight: bold;
+}
+
+
+div.file_row {
+	margin-top:5px;
+}
+
+div.file_thumbnail_container {
+	width:245px;
+	height:245px;
+	text-align:center;
+}
+
+div.file_actions {
+	border-top:1px solid #ccc;
+	margin-top:4px;
+	padding-top:2px;
+}
+
+div.file_actions ul.dropdown-menu {
+	font-size:120%;
+}
+
+div.file_title {
+	font-weight:bold;
+	font-size:13pt;
+	border-bottom:1px solid #ccc;
+	margin-bottom:4px;
+}
+
+div.file_meta_section {
+	min-height:125px;
+}
+
+div.percent {
+	display:inline-block;
+	width:50px;
+	text-align:right;
+}
+
+#user_icon { display:none; }
+#user_icon a { padding:2px; }
+#stats_icon a { padding:2px; }
+
+span.preview {
+	margin-right:0.2rem;
+	padding:2px;
+}
+
+span.preview > a {
+	font-weight:normal;
+	font-size:12pt;
+}
+
+
+div.control_box button.btn-success {
+	color:white !important;
+}
+
+div.map_preview {
+	width:240px;
+	height:240px;
+}
+
+div.map_section {
+	width:100%;
+	height:20rem;
+}
+
+a.dropdown-item {
+	color:#111111 !important;
+}
+
+div.file_description {
+	font-size:11pt;
+}
+
+div.file_description p,li {
+	padding:0px;
+	margin:0px;
+}
+
+@media only screen and (max-width: 767px) { /* bootstrap xs breakpoint */
+	div.game_list_icon_column {
+		position:absolute;
+		opacity:0.5;
+	}
+
+	div.map_preview {
+		width:240px;
+		height:120px;
+	}
+
+	div.item_thumb {
+		float:none;
+		display:block;
+		width:100%;
+		margin-bottom:5px;
+		text-align: center;
+	}
+
+	img.wiki_thumbnail {
+		max-height:120px;
+		width:auto;
+	}
+
+	div.game_list_description_column {
+		text-shadow: -1px -1px 0 #fffff8, 1px -1px 0 #fffff8, -1px 1px 0 #fffff8, 1px 1px 0 #fffff8;
+	}
+
+	div.game_list_description_column h3 {
+		font-size:1.5rem;
+	}
+
+	div.control_box {
+		position:fixed;
+		bottom:0px;
+		left:0px;
+		right:0px;
+		background-color:#fffff8;
+		z-index:1001;
+		border-top:3px solid #777772;;
+	}
+
+	div.gametile {
+		margin-left:0.1rem;
+	}
+}
